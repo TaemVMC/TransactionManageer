@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+foo: bar_dev
+
+
+#spring:
+#  application:
+#    name: VerificationManager
+#  profiles:
+#    active: prod
+#  config:
+#    import: optional:configserver:http://config-manager:8080
+
+#---
+#spring:
+#  application:
+#    name: VerificationManager
+#  profiles:
+#    active: dev
+#  config:
+#    import: optional:configserver:http://localhost:8080
+
