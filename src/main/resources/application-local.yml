@@ -1,4 +1,6 @@
 server:
   port: 8080
 
-foo: bar_local
+key:
+  api-key: 2138796b020ece9597584f793e580551
+  secret-key: dd0330a1d7faee9f27f24184b6927edf

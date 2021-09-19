@@ -1,4 +1,2 @@
 server:
   port: 8080
-
-foo: bar_prod

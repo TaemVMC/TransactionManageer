@@ -1,9 +1,6 @@
 server:
   port: 8080
-
-foo: bar_dev
-
-
+  
 #spring:
 #  application:
 #    name: VerificationManager
