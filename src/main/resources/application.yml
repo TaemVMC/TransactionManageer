@@ -1,9 +1,11 @@
-spring:
-  profiles:
-    active: local
-
 server:
-  port: 8080
+  port: 0
+
+spring:
+  application:
+    name: user-service
+  jackson:
+    property-naming-strategy: SNAKE_CASE
 
 api:
   default: https://api.bithumb.com

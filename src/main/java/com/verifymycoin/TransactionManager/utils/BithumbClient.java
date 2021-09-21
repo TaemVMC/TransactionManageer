@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,6 @@ public class BithumbClient {
 
             final byte[] macData = mac.doFinal(value.getBytes());
             return new Hex().encode(macData);
-
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
@@ -64,9 +64,7 @@ public class BithumbClient {
 
         if (strHost.startsWith("https://")) {
             HttpRequest request = HttpRequest.get(strHost);
-            // Accept all certificates
             request.trustAllCerts();
-            // Accept all hostnames
             request.trustAllHosts();
         }
 
@@ -77,16 +75,15 @@ public class BithumbClient {
             request = new HttpRequest(strHost, "POST");
             request.readTimeout(10000);
 
-            System.out.println("POST ==> " + request.url());
+            log.debug("POST ==> " + request.url());
 
             if (httpHeaders != null && !httpHeaders.isEmpty()) {
                 httpHeaders.put("api-client-type", "2");
                 request.headers(httpHeaders);
-                System.out.println(httpHeaders);
+                log.debug("Http headers ==> {}", httpHeaders);
             }
             if (rgParams != null && !rgParams.isEmpty()) {
                 request.form(rgParams);
-                System.out.println(rgParams);
             }
         } else {
             request = HttpRequest.get(strHost + BithumbUtils.mapToQueryString(rgParams));
@@ -112,7 +109,7 @@ public class BithumbClient {
 
         strData = strData.substring(0, strData.length() - 1);
 
-        System.out.println("1 : " + strData);
+        log.debug("Parameters ==> " + strData);
 
         strData = encodeURIComponent(strData);
 
@@ -121,17 +118,15 @@ public class BithumbClient {
         String str = endpoint + ";" + strData + ";" + nNonce;
         String encoded = asHex(hmacSha512(str, apiSecret));
 
-        System.out.println("strData was: " + str);
-        System.out.println("apiSecret was: " + apiSecret);
         array.put("Api-Key", apiKey);
         array.put("Api-Sign", encoded);
         array.put("Api-Nonce", nNonce);
 
         return array;
-
     }
 
-    public String callApi(String endpoint, HashMap<String, String> params, String apiKey, String apiSecret) {
+    public Map<String, String> callApi(String endpoint, HashMap<String, String> params, String apiKey,
+        String apiSecret) throws Exception {
         HashMap<String, String> rgParams = new HashMap<>();
         rgParams.put("endpoint", endpoint);
 
@@ -143,16 +138,17 @@ public class BithumbClient {
         HashMap<String, String> httpHeaders = getHttpHeaders(endpoint, rgParams, apiKey, apiSecret);
 
         String rgResultDecode = request(api_host, "POST", rgParams, httpHeaders);
+        log.debug("Bithumb client result decode = {}", rgResultDecode);
 
         if (!rgResultDecode.startsWith("error")) {
-            HashMap<String, String> result;
             try {
-                result = new ObjectMapper().readValue(rgResultDecode, HashMap.class);
-                System.out.println(result);
+                return new ObjectMapper().readValue(rgResultDecode, Map.class);
             } catch (IOException e) {
                 e.printStackTrace();
+                throw new Exception();
             }
+        } else {
+            throw new Exception();
         }
-        return rgResultDecode;
     }
 }
