@@ -1,7 +1,11 @@
 package com.verifymycoin.TransactionManager.controller;
 
+import static com.verifymycoin.TransactionManager.utils.ApiUtils.success;
+
 import com.verifymycoin.TransactionManager.model.dto.TransactionsDataDto;
 import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
+import com.verifymycoin.TransactionManager.model.response.CoinExchangeRes;
+import com.verifymycoin.TransactionManager.model.response.PaymentCurrencyRes;
 import com.verifymycoin.TransactionManager.service.TransactionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,17 +34,20 @@ public class TransactionController {
 
     @GetMapping("/exchange")
     public ResponseEntity<?> getExchange() {
-        return ResponseEntity.ok().body(transactionService.getExchanges());
+
+        return ResponseEntity.ok().body(success(transactionService.getExchanges()));
     }
 
     @GetMapping("/exchange/{exchangeId}/payment-currency")
     public ResponseEntity<?> getPaymentCurrencyByExchangeId(@PathVariable("exchangeId") final Integer exchangeId) {
-        return ResponseEntity.ok().body(transactionService.getPaymentCurrencyByExchangeId(exchangeId));
+        List<PaymentCurrencyRes> res = transactionService.getPaymentCurrencyByExchangeId(exchangeId);
+        return ResponseEntity.ok().body(success(res));
     }
 
     @GetMapping("/exchange/{exchangeId}/coin")
     public ResponseEntity<?> getCoinListByExchangeId(@PathVariable("exchangeId") final Integer exchangeId) {
-        return ResponseEntity.ok().body(transactionService.getCoinListByExchangeId(exchangeId));
+        List<CoinExchangeRes> res = transactionService.getCoinListByExchangeId(exchangeId);
+        return ResponseEntity.ok().body(success(res));
     }
 
     @PostMapping("/exchange/{exchangeId}")
@@ -49,6 +56,6 @@ public class TransactionController {
         log.info("user_id ====> {}", userId);
 
         List<TransactionsDataDto> res = transactionService.getTransactions(req, exchangeId, userId);
-        return ResponseEntity.ok().body(res);
+        return ResponseEntity.ok().body(success(res));
     }
 }

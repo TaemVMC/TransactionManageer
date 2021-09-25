@@ -138,6 +138,7 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    @Override
     @Transactional(rollbackOn = Exception.class)
     public void saveTransactionInfos(final List<TransactionsDataDto> data, final Integer exchangeId,
         final String userId) {
