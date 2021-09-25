@@ -1,12 +1,10 @@
 package com.verifymycoin.TransactionManager.model.entity;
 
-import com.verifymycoin.TransactionManager.common.enums.TransactionInfoType;
-import java.time.LocalDateTime;
+import com.verifymycoin.TransactionManager.model.dto.TransactionsDataDto;
+import com.verifymycoin.TransactionManager.utils.Utils;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -22,27 +20,23 @@ import lombok.NoArgsConstructor;
 public class TransactionInfo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
-    private long id;
+    @Column(nullable = false, length = 32)
+    private String id;
 
     @Column(nullable = false)
-    private TransactionInfoType type;
+    private String type;
 
-    @ManyToOne(targetEntity = Exchange.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "exchange_id", nullable = false)
-    private Exchange exchange;
+    @Column(name = "exchange_id", nullable = false)
+    private Integer exchangeId;
 
-    @ManyToOne(targetEntity = Coin.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_coin_symbol", nullable = false)
-    private Coin coin;
+    @Column(name = "order_coin_symbol", nullable = false, length = 10)
+    private String orderCoinSymbol;
 
-    @Column(nullable = false)
-    private Long userId;
+    @Column(name = "payment_currency_symbol", nullable = false, length = 10)
+    private String paymentCurrencySymbol;
 
-    @ManyToOne(targetEntity = PaymentCurrency.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_currency", nullable = false)
-    private PaymentCurrency paymentCurrency;
+    @Column(nullable = false, length = 25)
+    private String userId;
 
     @Column(nullable = false)
     private Float units;
@@ -54,5 +48,34 @@ public class TransactionInfo {
     private Float fee;
 
     @Column(nullable = false)
-    private LocalDateTime transferDate;
+    private Long transferDate;
+
+    @ManyToOne(targetEntity = Exchange.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "exchange_id", nullable = false, insertable = false, updatable = false)
+    private Exchange exchange;
+
+    @ManyToOne(targetEntity = PaymentCurrency.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_currency_symbol", nullable = false, insertable = false, updatable = false)
+    private PaymentCurrency paymentCurrency;
+
+    @ManyToOne(targetEntity = Coin.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_coin_symbol", nullable = false, insertable = false, updatable = false)
+    private Coin coin;
+
+    public TransactionInfo(TransactionsDataDto dto, Integer exchangeId, String userId) {
+        String source = dto.getSearch().name()
+            + exchangeId + dto.getOrderCurrency() + dto.getPaymentCurrency()
+            + dto.getTransferDate();
+
+        this.id = Utils.generateTransactionId(source);
+        this.type = dto.getSearch().name();
+        this.exchangeId = exchangeId;
+        this.orderCoinSymbol = dto.getOrderCurrency();
+        this.paymentCurrencySymbol = dto.getPaymentCurrency();
+        this.userId = userId;
+        this.units = dto.getUnits();
+        this.amount = dto.getAmount();
+        this.fee = dto.getFee();
+        this.transferDate = dto.getTransferDate();
+    }
 }

@@ -5,6 +5,7 @@ import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.NOT_FOU
 
 import com.verifymycoin.TransactionManager.common.exceptions.CustomRequestException;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeIdException;
+import com.verifymycoin.TransactionManager.common.exceptions.TransactionsApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class RestExceptionHandler {
+
+    @ExceptionHandler(value = TransactionsApiException.class)
+    public ResponseEntity<?> handleTransactionsApiException(final TransactionsApiException e) {
+        return ResponseEntity.badRequest().body(new CustomRequestException(e.getCode(), e.getMessage()));
+    }
 
     @ExceptionHandler(value = NotFoundExchangeIdException.class)
     public ResponseEntity<?> handleNotFoundExchangeIdException(final NotFoundExchangeIdException e) {

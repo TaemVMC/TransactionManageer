@@ -2,6 +2,7 @@ package com.verifymycoin.TransactionManager.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,8 @@ public class AppConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper().setPropertyNamingStrategy(new SnakeCaseStrategy());
+        return new ObjectMapper()
+            .setPropertyNamingStrategy(new SnakeCaseStrategy())
+            .registerModule(new JavaTimeModule());
     }
 }

@@ -1,12 +1,19 @@
 package com.verifymycoin.TransactionManager.service;
 
+import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.INTERNAL_SERVER_ERROR;
+import static com.verifymycoin.TransactionManager.common.enums.SearchGb.BUY;
+import static com.verifymycoin.TransactionManager.common.enums.SearchGb.SELL;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.verifymycoin.TransactionManager.common.enums.SearchGb;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeIdException;
+import com.verifymycoin.TransactionManager.common.exceptions.TransactionsApiException;
 import com.verifymycoin.TransactionManager.model.dto.TransactionsDataDto;
 import com.verifymycoin.TransactionManager.model.entity.CoinExchangeAssoc;
 import com.verifymycoin.TransactionManager.model.entity.Exchange;
 import com.verifymycoin.TransactionManager.model.entity.PaymentCurrencyExchangeAssoc;
+import com.verifymycoin.TransactionManager.model.entity.TransactionInfo;
 import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
 import com.verifymycoin.TransactionManager.model.response.CoinExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.ExchangeRes;
@@ -14,17 +21,17 @@ import com.verifymycoin.TransactionManager.model.response.PaymentCurrencyRes;
 import com.verifymycoin.TransactionManager.repository.CoinExchangeAssocRepository;
 import com.verifymycoin.TransactionManager.repository.ExchangeRepository;
 import com.verifymycoin.TransactionManager.repository.PaymentCurrencyExchangeAssocRepository;
+import com.verifymycoin.TransactionManager.repository.TransactionInfoRepository;
 import com.verifymycoin.TransactionManager.utils.BithumbClient;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.NameTokenizers;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -33,10 +40,10 @@ import org.springframework.stereotype.Service;
 public class TransactionServiceImpl implements TransactionService {
 
     private final BithumbClient bithumbClient;
-    private final Environment env;
     private final ExchangeRepository exchangeRepository;
     private final PaymentCurrencyExchangeAssocRepository paymentCurrencyExchangeAssocRepo;
     private final CoinExchangeAssocRepository coinExchangeAssocRepository;
+    private final TransactionInfoRepository transactionInfoRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
@@ -97,32 +104,49 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Map<String, String> getTransactions(final TransactionsReq req) throws Exception {
-        try {
-            // Request params
-            Map<String, String> params = objectMapper.convertValue(req, new TypeReference<>() {
-            });
-            params.put("searchGb", "0");
-            String API_KEY = env.getProperty("key.api-key");
-            String API_SECRET = env.getProperty("key.secret-key");
+    public List<TransactionsDataDto> getTransactions(final TransactionsReq req, final Integer exchangeId,
+        final String userId) throws Exception {
+        // Request params
+        Map<String, String> params = objectMapper.convertValue(req, new TypeReference<>() {
+        });
+        params.put("searchGb", SearchGb.ALL.getCode());
+        String API_KEY = params.get("api_key");
+        String API_SECRET = params.get("secret_key");
 
-            // Request
-            Map<String, Object> res = bithumbClient.callApi("/info/user_transactions", params, API_KEY, API_SECRET);
-            String status = (String) res.getOrDefault("status", "5900");
+        // Request
+        Map<String, Object> res = bithumbClient.callApi("/info/user_transactions", params, API_KEY, API_SECRET);
+        String status = (String) res.getOrDefault("status", "5900");
 
-            List<TransactionsDataDto> data = new ArrayList<>();
-            if (status.equals("0000")) {
-                List<Object> dataList = (List<Object>) res.getOrDefault("data", new ArrayList<>());
+        if (status.equals("0000")) {
+            List<Object> dataList = (List<Object>) res.getOrDefault("data", new ArrayList<>());
 
-                modelMapper.getConfiguration().setSourceNameTokenizer(NameTokenizers.UNDERSCORE)
-                    .setDestinationNameTokenizer(NameTokenizers.CAMEL_CASE);
-                dataList.forEach(v -> data.add(modelMapper.map(v, TransactionsDataDto.class)));
-            }
+            modelMapper.getConfiguration().setSourceNameTokenizer(NameTokenizers.UNDERSCORE)
+                .setDestinationNameTokenizer(NameTokenizers.CAMEL_CASE);
 
-            return new HashMap<>();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception();
+            List<TransactionsDataDto> data = dataList.stream()
+                .map(v -> modelMapper.map(v, TransactionsDataDto.class))
+                .filter(el -> el.getSearch().equals(SELL) || el.getSearch().equals(BUY))
+                .collect(Collectors.toList());
+
+            // 데이터 저장
+            saveTransactionInfos(data, exchangeId, userId);
+            return data;
+        } else {
+            throw new TransactionsApiException(
+                (String) res.getOrDefault("status", INTERNAL_SERVER_ERROR.getCode()),
+                (String) res.getOrDefault("message", INTERNAL_SERVER_ERROR.getDescription()));
         }
     }
+
+    @Transactional(rollbackOn = Exception.class)
+    public void saveTransactionInfos(final List<TransactionsDataDto> data, final Integer exchangeId,
+        final String userId) {
+
+        // dto to entity
+        List<TransactionInfo> entity = data.stream()
+            .map(v -> new TransactionInfo(v, exchangeId, userId))
+            .collect(Collectors.toList());
+        transactionInfoRepository.saveAll(entity);
+    }
 }
+

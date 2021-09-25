@@ -87,7 +87,7 @@ public class BithumbClient {
                 request.form(rgParams);
             }
         } else {
-            request = HttpRequest.get(strHost + BithumbUtils.mapToQueryString(rgParams));
+            request = HttpRequest.get(strHost + Utils.mapToQueryString(rgParams));
             request.readTimeout(10000);
 
             System.out.println("Response was: " + response);
@@ -105,7 +105,7 @@ public class BithumbClient {
     private HashMap<String, String> getHttpHeaders(String endpoint, HashMap<String, String> rgData, String apiKey,
         String apiSecret) {
 
-        String strData = BithumbUtils.mapToQueryString(rgData).replace("?", "");
+        String strData = Utils.mapToQueryString(rgData).replace("?", "");
         String nNonce = usecTime();
 
         strData = strData.substring(0, strData.length() - 1);

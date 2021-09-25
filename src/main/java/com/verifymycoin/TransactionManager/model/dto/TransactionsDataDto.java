@@ -1,8 +1,6 @@
 package com.verifymycoin.TransactionManager.model.dto;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import com.verifymycoin.TransactionManager.common.enums.SearchGb;
 import java.util.concurrent.TimeUnit;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,19 +12,23 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TransactionsDataDto {
 
-    private String search;
-    private LocalDateTime transferDate;
+    private SearchGb search;
+
+    private Long transferDate;
+
     private String orderCurrency;
     private String paymentCurrency;
     private Float units;
     private Float price;
-    private Integer amount;
+    private Float amount;
     private Float fee;
 
+    public void setSearch(String search) {
+        this.search = SearchGb.find(search);
+    }
+
     public void setTransferDate(String transferDate) {
-        long milliseconds = TimeUnit.MICROSECONDS.toMillis(Long.parseLong(transferDate));
-        Instant instant = Instant.ofEpochMilli(milliseconds);
-        this.transferDate = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        this.transferDate = TimeUnit.MICROSECONDS.toMillis(Long.parseLong(transferDate));
     }
 
     public void setUnits(String units) {
@@ -38,7 +40,7 @@ public class TransactionsDataDto {
     }
 
     public void setAmount(String amount) {
-        this.amount = Integer.parseInt(amount);
+        this.amount = Float.parseFloat(amount);
     }
 
     public void setFee(String fee) {
