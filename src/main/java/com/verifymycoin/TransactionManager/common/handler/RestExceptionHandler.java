@@ -1,0 +1,29 @@
+package com.verifymycoin.TransactionManager.common.handler;
+
+import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.INTERNAL_SERVER_ERROR;
+import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.NOT_FOUND_EXCHANGE_ID;
+
+import com.verifymycoin.TransactionManager.common.exceptions.CustomRequestException;
+import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeIdException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@Slf4j
+@RestControllerAdvice
+public class RestExceptionHandler {
+
+    @ExceptionHandler(value = NotFoundExchangeIdException.class)
+    public ResponseEntity<?> handleNotFoundExchangeIdException(final NotFoundExchangeIdException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomRequestException(NOT_FOUND_EXCHANGE_ID));
+    }
+
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<?> handleException(final Exception e) {
+        log.error("Internal Server error", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new CustomRequestException(INTERNAL_SERVER_ERROR));
+    }
+}
