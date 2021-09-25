@@ -1,5 +1,6 @@
 package com.verifymycoin.TransactionManager.utils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -125,7 +126,7 @@ public class BithumbClient {
         return array;
     }
 
-    public Map<String, String> callApi(String endpoint, HashMap<String, String> params, String apiKey,
+    public Map<String, Object> callApi(String endpoint, Map<String, String> params, String apiKey,
         String apiSecret) throws Exception {
         HashMap<String, String> rgParams = new HashMap<>();
         rgParams.put("endpoint", endpoint);
@@ -142,13 +143,17 @@ public class BithumbClient {
 
         if (!rgResultDecode.startsWith("error")) {
             try {
-                return new ObjectMapper().readValue(rgResultDecode, Map.class);
+                return new ObjectMapper().readValue(rgResultDecode, new TypeReference<>() {
+                });
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new Exception();
             }
         } else {
-            throw new Exception();
+            String errorMessage = rgResultDecode.substring(rgResultDecode.indexOf("{"),
+                rgResultDecode.indexOf("}") + 1);
+            return new ObjectMapper().readValue(errorMessage, new TypeReference<>() {
+            });
         }
     }
 }

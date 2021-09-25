@@ -3,9 +3,13 @@ server:
 
 spring:
   application:
-    name: user-service
+    name: transaction-service
   jackson:
     property-naming-strategy: SNAKE_CASE
+  jpa:
+    database: mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 api:
   default: https://api.bithumb.com
