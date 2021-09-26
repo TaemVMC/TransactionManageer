@@ -21,5 +21,5 @@ public class TransactionsReq {
     private Date fromDate;                      // 조회 시작일
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date toDate;                        // 조회 종료일
+    private final Date toDate = new Date();                        // 조회 종료일
 }
