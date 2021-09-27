@@ -2,7 +2,6 @@ package com.verifymycoin.TransactionManager.controller;
 
 import static com.verifymycoin.TransactionManager.utils.ApiUtils.success;
 
-import com.verifymycoin.TransactionManager.model.dto.TransactionsDataDto;
 import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
 import com.verifymycoin.TransactionManager.model.response.CoinExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.PaymentCurrencyRes;
@@ -53,9 +52,9 @@ public class TransactionController {
     @PostMapping("/exchange/{exchangeId}")
     public ResponseEntity<?> getTransactions(@PathVariable("exchangeId") Integer exchangeId,
         @RequestBody final TransactionsReq req, @RequestHeader("userId") final String userId) throws Exception {
-        log.info("user_id ====> {}", userId);
+        log.debug("user_id ====> {}", userId);
 
-        List<TransactionsDataDto> res = transactionService.getTransactions(req, exchangeId, userId);
-        return ResponseEntity.ok().body(success(res));
+        transactionService.getTransactions(req, exchangeId, userId);
+        return ResponseEntity.ok().body(success("Hello"));
     }
 }

@@ -18,21 +18,21 @@ import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
 import com.verifymycoin.TransactionManager.model.response.CoinExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.ExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.PaymentCurrencyRes;
-import com.verifymycoin.TransactionManager.repository.CoinExchangeAssocRepository;
-import com.verifymycoin.TransactionManager.repository.ExchangeRepository;
-import com.verifymycoin.TransactionManager.repository.PaymentCurrencyExchangeAssocRepository;
-import com.verifymycoin.TransactionManager.repository.TransactionInfoRepository;
+import com.verifymycoin.TransactionManager.repository.CoinExchangeAssocRepo;
+import com.verifymycoin.TransactionManager.repository.ExchangeRepo;
+import com.verifymycoin.TransactionManager.repository.PaymentCurrencyExchangeAssocRepo;
+import com.verifymycoin.TransactionManager.repository.TransactionInfoRepo;
 import com.verifymycoin.TransactionManager.utils.BithumbClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.NameTokenizers;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -40,10 +40,11 @@ import org.springframework.stereotype.Service;
 public class TransactionServiceImpl implements TransactionService {
 
     private final BithumbClient bithumbClient;
-    private final ExchangeRepository exchangeRepository;
-    private final PaymentCurrencyExchangeAssocRepository paymentCurrencyExchangeAssocRepo;
-    private final CoinExchangeAssocRepository coinExchangeAssocRepository;
-    private final TransactionInfoRepository transactionInfoRepository;
+    private final ExchangeRepo exchangeRepository;
+    private final PaymentCurrencyExchangeAssocRepo paymentCurrencyExchangeAssocRepo;
+    private final CoinExchangeAssocRepo coinExchangeAssocRepository;
+    private final TransactionInfoRepo transactionInfoRepository;
+
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
@@ -104,7 +105,20 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<TransactionsDataDto> getTransactions(final TransactionsReq req, final Integer exchangeId,
+    @Transactional(rollbackFor = Exception.class)
+    public void getTransactionInfoSummary(TransactionsReq req, Integer exchangeId, String userId) throws Exception {
+        // 기존 존재하는 데이터인지
+        boolean check = transactionInfoRepository.existsTransactionInfo(req, exchangeId, userId);
+
+        if (check) {
+            // pass
+        } else {
+            getTransactions(req, exchangeId, userId);
+        }
+    }
+
+    @Override
+    public void getTransactions(final TransactionsReq req, final Integer exchangeId,
         final String userId) throws Exception {
         // Request params
         Map<String, String> params = objectMapper.convertValue(req, new TypeReference<>() {
@@ -130,7 +144,6 @@ public class TransactionServiceImpl implements TransactionService {
 
             // 데이터 저장
             saveTransactionInfos(data, exchangeId, userId);
-            return data;
         } else {
             throw new TransactionsApiException(
                 (String) res.getOrDefault("status", INTERNAL_SERVER_ERROR.getCode()),
@@ -138,16 +151,25 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
-    @Override
-    @Transactional(rollbackOn = Exception.class)
-    public void saveTransactionInfos(final List<TransactionsDataDto> data, final Integer exchangeId,
+    /**
+     * 트랜잭션 정보 저장
+     *
+     * @param data
+     * @param exchangeId
+     * @param userId
+     */
+    private void saveTransactionInfos(final List<TransactionsDataDto> data, final Integer exchangeId,
         final String userId) {
-
         // dto to entity
         List<TransactionInfo> entity = data.stream()
             .map(v -> new TransactionInfo(v, exchangeId, userId))
             .collect(Collectors.toList());
         transactionInfoRepository.saveAll(entity);
+    }
+
+    @Override
+    public void calcTransactionInfo() {
+
     }
 }
 

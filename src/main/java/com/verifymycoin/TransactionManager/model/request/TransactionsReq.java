@@ -13,13 +13,23 @@ public class TransactionsReq {
 
     private String apiKey;                      // 사용자 API
     private String secretKey;                   // 사용자 Secret key
-
     private String orderCurrency;               // 주문 통화 (코인)
     private PaymentCurrency paymentCurrency;    // 결제 통화 (마켓)
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date fromDate;                      // 조회 시작일
+    private Date startDate;                     // 조회 시작일
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private final Date toDate = new Date();                        // 조회 종료일
+    private Date endDate = new Date();          // 조회 종료일
+
+    public TransactionsReq(String apiKey, String secretKey, String orderCurrency, String paymentCurrency,
+        Date startDate, Date endDate) {
+        this.apiKey = apiKey;
+        this.secretKey = secretKey;
+        this.orderCurrency = orderCurrency;
+        this.paymentCurrency = PaymentCurrency.find(paymentCurrency);
+        this.startDate = startDate;
+
+        this.endDate = endDate != null ? endDate : new Date();
+    }
 }
