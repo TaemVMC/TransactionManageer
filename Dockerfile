@@ -14,7 +14,7 @@ FROM builder AS development
 WORKDIR /app
 CMD ["java", "-jar", "build/libs/VerificationManager-0.0.1-SNAPSHOT.jar"]
 
-#FROM openjdk:11-jre-slim AS production
-#WORKDIR /app
-#COPY --from=builder /app/build/libs/VerificationManager-0.0.1-SNAPSHOT.jar /app/VerificationManager-0.0.1-SNAPSHOT.jar
-#CMD ["java", "-jar", "VerificationManager-0.0.1-SNAPSHOT.jar"]
+FROM openjdk:11-jre-slim AS production
+WORKDIR /app
+COPY --from=builder /app/build/libs/VerificationManager-0.0.1-SNAPSHOT.jar /app/VerificationManager-0.0.1-SNAPSHOT.jar
+CMD ["java", "-jar", "VerificationManager-0.0.1-SNAPSHOT.jar"]
