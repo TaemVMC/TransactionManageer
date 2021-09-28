@@ -4,12 +4,10 @@ import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.NOT_FOU
 
 import lombok.Getter;
 
+@Getter
 public class NotFoundExchangeIdException extends RuntimeException {
 
-    @Getter
     private final Integer code;
-
-    @Getter
     private final String message;
 
     public NotFoundExchangeIdException() {

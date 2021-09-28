@@ -19,5 +19,5 @@ public interface TransactionService {
 
     void getTransactions(final TransactionsReq req, final Integer exchangeId, final String userId) throws Exception;
 
-    void calcTransactionInfo();
+    void calcTransactionInfo(TransactionsReq req, Integer exchangeId, String userId);
 }

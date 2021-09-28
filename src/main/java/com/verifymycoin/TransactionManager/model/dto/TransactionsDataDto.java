@@ -22,6 +22,7 @@ public class TransactionsDataDto {
     private Float price;
     private Float amount;
     private Float fee;
+    private Float orderBalance;
 
     public void setSearch(String search) {
         this.search = SearchGb.find(search);
@@ -32,6 +33,7 @@ public class TransactionsDataDto {
     }
 
     public void setUnits(String units) {
+        units = units.replaceAll(" ", "");
         this.units = Float.parseFloat(units);
     }
 
@@ -45,5 +47,9 @@ public class TransactionsDataDto {
 
     public void setFee(String fee) {
         this.fee = Float.parseFloat(fee);
+    }
+
+    public void setOrderBalance(String orderBalance) {
+        this.orderBalance = Float.parseFloat(orderBalance);
     }
 }

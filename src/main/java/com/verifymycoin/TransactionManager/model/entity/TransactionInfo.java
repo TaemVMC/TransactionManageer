@@ -39,6 +39,9 @@ public class TransactionInfo {
     private String userId;
 
     @Column(nullable = false)
+    private Float price;
+
+    @Column(nullable = false)
     private Float units;
 
     @Column(nullable = false)
@@ -46,6 +49,9 @@ public class TransactionInfo {
 
     @Column(nullable = false)
     private Float fee;
+
+    @Column(nullable = false)
+    private Float orderBalance;
 
     @Column(nullable = false)
     private Long transferDate;
@@ -73,9 +79,11 @@ public class TransactionInfo {
         this.orderCoinSymbol = dto.getOrderCurrency();
         this.paymentCurrencySymbol = dto.getPaymentCurrency();
         this.userId = userId;
+        this.price = dto.getPrice();
         this.units = dto.getUnits();
         this.amount = dto.getAmount();
         this.fee = dto.getFee();
+        this.orderBalance = dto.getOrderBalance();
         this.transferDate = dto.getTransferDate();
     }
 }

@@ -16,3 +16,9 @@ spring:
 
 api:
   default: https://api.bithumb.com
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

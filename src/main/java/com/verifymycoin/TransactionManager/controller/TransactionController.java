@@ -26,14 +26,8 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @GetMapping("/heath")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok().body("OK");
-    }
-
     @GetMapping("/exchange")
     public ResponseEntity<?> getExchange() {
-
         return ResponseEntity.ok().body(success(transactionService.getExchanges()));
     }
 

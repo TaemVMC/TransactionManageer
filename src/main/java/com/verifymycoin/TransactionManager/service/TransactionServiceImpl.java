@@ -2,12 +2,12 @@ package com.verifymycoin.TransactionManager.service;
 
 import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.INTERNAL_SERVER_ERROR;
 import static com.verifymycoin.TransactionManager.common.enums.SearchGb.BUY;
-import static com.verifymycoin.TransactionManager.common.enums.SearchGb.SELL;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.verifymycoin.TransactionManager.common.enums.SearchGb;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeIdException;
+import com.verifymycoin.TransactionManager.common.exceptions.NotFoundTransactionException;
 import com.verifymycoin.TransactionManager.common.exceptions.TransactionsApiException;
 import com.verifymycoin.TransactionManager.model.dto.TransactionsDataDto;
 import com.verifymycoin.TransactionManager.model.entity.CoinExchangeAssoc;
@@ -110,11 +110,12 @@ public class TransactionServiceImpl implements TransactionService {
         // 기존 존재하는 데이터인지
         boolean check = transactionInfoRepository.existsTransactionInfo(req, exchangeId, userId);
 
-        if (check) {
-            // pass
-        } else {
+        // 거래소 서버에서 거래정보 GET 후 저장
+        if (!check) {
             getTransactions(req, exchangeId, userId);
         }
+
+
     }
 
     @Override
@@ -139,8 +140,12 @@ public class TransactionServiceImpl implements TransactionService {
 
             List<TransactionsDataDto> data = dataList.stream()
                 .map(v -> modelMapper.map(v, TransactionsDataDto.class))
-                .filter(el -> el.getSearch().equals(SELL) || el.getSearch().equals(BUY))
+                .filter(el -> el.getSearch().isSaveType())
                 .collect(Collectors.toList());
+
+            if (data.size() == 0) {
+                throw new NotFoundTransactionException();
+            }
 
             // 데이터 저장
             saveTransactionInfos(data, exchangeId, userId);
@@ -168,8 +173,24 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public void calcTransactionInfo() {
+    public void calcTransactionInfo(TransactionsReq req, Integer exchangeId, String userId) {
+        List<TransactionInfo> infos = transactionInfoRepository.findAllTransactionInfo(req, exchangeId, userId);
 
+        if (infos == null || infos.size() == 0) {
+            throw new NotFoundTransactionException();
+        }
+
+        float buyAmount = 0, seelAmount = 0;
+        float buyUnits = 0, sellUnits = 0;
+
+        for (TransactionInfo info : infos) {
+            if (info.getType().equals(BUY.name())) {
+                buyUnits += info.getUnits();
+
+            } else {
+                sellUnits += info.getUnits();
+            }
+        }
     }
 }
 
