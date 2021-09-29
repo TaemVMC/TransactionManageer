@@ -27,6 +27,6 @@ public enum SearchGb {
     }
 
     public boolean isSaveType() {
-        return this.equals(BUY) || this.equals(SELL) || this.equals(DEPOSIT) || this.equals(WITHDRAW);
+        return this.equals(BUY) || this.equals(SELL);
     }
 }
