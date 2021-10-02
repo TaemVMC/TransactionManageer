@@ -3,12 +3,13 @@ spring:
     url: jdbc:mysql://localhost:3306/test?useSSL=false
     username: root
     password: ms159753
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
   jpa:
     properties:
       hibernate:
         show_sql: true
         format_sql: true
-        use_sql_comments: true
   h2:
     console:
       enabled: true

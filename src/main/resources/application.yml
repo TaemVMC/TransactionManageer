@@ -14,6 +14,12 @@ spring:
     username: transactionuser
     password: user1234
 
+  kafka:
+    bootstrap-servers: 13.209.68.198:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 api:
   default: https://api.bithumb.com
 

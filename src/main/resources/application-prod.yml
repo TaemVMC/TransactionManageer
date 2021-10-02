@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://3.37.127.25:3306/transaction?useSSL=false
+    username: transactionuser
+    password: user1234
+  kafka:
+    bootstrap-servers: 3.37.127.25:9092
+
+api:
+  default: https://api.bithumb.com
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
