@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 8080
 
 spring:
   application:
@@ -10,9 +10,9 @@ spring:
     database: mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://3.35.214.234:3306/transaction?useSSL=false
-    username: root
-    password: root
+    url: jdbc:mysql://13.209.68.198:3306/transaction?useSSL=false
+    username: transactionuser
+    password: user1234
 
 api:
   default: https://api.bithumb.com
