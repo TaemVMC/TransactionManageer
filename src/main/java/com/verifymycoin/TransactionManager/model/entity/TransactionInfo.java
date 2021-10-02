@@ -39,19 +39,19 @@ public class TransactionInfo {
     private String userId;
 
     @Column(nullable = false)
-    private Float price;
+    private Double price;
 
     @Column(nullable = false)
-    private Float units;
+    private Double units;
 
     @Column(nullable = false)
-    private Float amount;
+    private Double amount;
 
     @Column(nullable = false)
-    private Float fee;
+    private Double fee;
 
     @Column(nullable = false)
-    private Float orderBalance;
+    private Double orderBalance;
 
     @Column(nullable = false)
     private Long transferDate;

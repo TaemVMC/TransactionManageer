@@ -12,11 +12,11 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
-  kafka:
-    bootstrap-servers: 127.0.0.1:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  #  kafka:
+  #    bootstrap-servers: 127.0.0.1:9092
+  #    producer:
+  #      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+  #      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   h2:
     console:
       enabled: true

@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:mysql://3.35.206.97:3306/transaction?useSSL=false
+    username: root
+    password: root

@@ -1,7 +1,6 @@
 package com.verifymycoin.TransactionManager.service;
 
 import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.INTERNAL_SERVER_ERROR;
-import static com.verifymycoin.TransactionManager.common.enums.SearchGb.BUY;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +8,8 @@ import com.verifymycoin.TransactionManager.common.enums.SearchGb;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeIdException;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundTransactionException;
 import com.verifymycoin.TransactionManager.common.exceptions.TransactionsApiException;
+import com.verifymycoin.TransactionManager.model.dto.KafkaTransactionDto;
+import com.verifymycoin.TransactionManager.model.dto.TransactionSummaryDto;
 import com.verifymycoin.TransactionManager.model.dto.TransactionsDataDto;
 import com.verifymycoin.TransactionManager.model.entity.CoinExchangeAssoc;
 import com.verifymycoin.TransactionManager.model.entity.Exchange;
@@ -18,6 +19,7 @@ import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
 import com.verifymycoin.TransactionManager.model.response.CoinExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.ExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.PaymentCurrencyRes;
+import com.verifymycoin.TransactionManager.model.response.TransactionInfoRes;
 import com.verifymycoin.TransactionManager.repository.CoinExchangeAssocRepo;
 import com.verifymycoin.TransactionManager.repository.ExchangeRepo;
 import com.verifymycoin.TransactionManager.repository.PaymentCurrencyExchangeAssocRepo;
@@ -54,6 +56,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @return Exchange list
      */
     @Override
+    @Transactional(readOnly = true)
     public List<ExchangeRes> getExchanges() {
         List<ExchangeRes> res = new ArrayList<>();
         Iterable<Exchange> exchanges = exchangeRepository.findAll();
@@ -68,9 +71,9 @@ public class TransactionServiceImpl implements TransactionService {
      * @return Payment currency list by exchange
      */
     @Override
+    @Transactional(readOnly = true)
     public List<PaymentCurrencyRes> getPaymentCurrencyByExchangeId(final Integer exchangeId) {
-        List<PaymentCurrencyExchangeAssoc> paymentCurrencyExchangeAssocs = paymentCurrencyExchangeAssocRepo.findByExchangeId(
-            exchangeId);
+        List<PaymentCurrencyExchangeAssoc> paymentCurrencyExchangeAssocs = paymentCurrencyExchangeAssocRepo.findByExchangeId(exchangeId);
 
         if (paymentCurrencyExchangeAssocs.isEmpty()) {
             throw new NotFoundExchangeIdException();
@@ -90,6 +93,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @return
      */
     @Override
+    @Transactional(readOnly = true)
     public List<CoinExchangeRes> getCoinListByExchangeId(final Integer exchangeId) {
         List<CoinExchangeAssoc> coinExchangeAssocs = coinExchangeAssocRepository.findByExchangeId(exchangeId);
 
@@ -106,7 +110,12 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void getTransactionInfoSummary(TransactionsReq req, Integer exchangeId, String userId) throws Exception {
+    public TransactionInfoRes getTransactionInfoSummary(final TransactionsReq req, final Integer exchangeId, final String userId)
+        throws Exception {
+        // 존재하는 거래소인지 체크
+        Exchange exchange = exchangeRepository.findById(exchangeId)
+            .orElseThrow(NotFoundExchangeIdException::new);
+
         // 기존 존재하는 데이터인지
         boolean check = transactionInfoRepository.existsTransactionInfo(req, exchangeId, userId);
 
@@ -115,16 +124,59 @@ public class TransactionServiceImpl implements TransactionService {
             getTransactions(req, exchangeId, userId);
         }
 
-
+        return calcTransactionInfoSummary(req, userId, exchange);
     }
 
-    @Override
-    public void getTransactions(final TransactionsReq req, final Integer exchangeId,
-        final String userId) throws Exception {
+    private TransactionInfoRes calcTransactionInfoSummary(final TransactionsReq req, final String userId, final Exchange exchange) {
+        List<TransactionSummaryDto> dto = transactionInfoRepository.calcTransactionSummary(req, exchange.getId(), userId);
+
+        TransactionInfoRes res = new TransactionInfoRes();
+        int cnt = 0;
+        double buyAmount = 0, sellAmount = 0;
+
+        // API response
+        for (TransactionSummaryDto el : dto) {
+            if (el.getType().equals(SearchGb.BUY.name())) {
+                buyAmount = el.getTotalAmount();
+                res.setBuyCount(el.getCount());
+            } else {
+                sellAmount = el.getTotalAmount();
+                res.setSellCount(el.getCount());
+            }
+            cnt += el.getCount();
+        }
+
+        res.setTotalCount(cnt);
+
+        // Kafka
+        KafkaTransactionDto kafkaDto = KafkaTransactionDto.builder()
+            .exchangeName(exchange.getExchangeName())
+            .userId(userId)
+            .orderCurrency(req.getOrderCurrency())
+            .paymentCurrency(req.getPaymentCurrency().getCode())
+            .buyAmount(buyAmount)
+            .sellAmount(sellAmount)
+            .endDate(req.getEndDate())
+            .build();
+
+        return res;
+    }
+
+    /**
+     * Get transactions from Bithumb
+     *
+     * @param req
+     * @param exchangeId
+     * @param userId
+     * @throws Exception
+     */
+    private void getTransactions(final TransactionsReq req, final Integer exchangeId, final String userId) throws Exception {
         // Request params
         Map<String, String> params = objectMapper.convertValue(req, new TypeReference<>() {
         });
         params.put("searchGb", SearchGb.ALL.getCode());
+        params.put("count", "50");
+
         String API_KEY = params.get("api_key");
         String API_SECRET = params.get("secret_key");
 
@@ -170,27 +222,6 @@ public class TransactionServiceImpl implements TransactionService {
             .map(v -> new TransactionInfo(v, exchangeId, userId))
             .collect(Collectors.toList());
         transactionInfoRepository.saveAll(entity);
-    }
-
-    @Override
-    public void calcTransactionInfo(TransactionsReq req, Integer exchangeId, String userId) {
-        List<TransactionInfo> infos = transactionInfoRepository.findAllTransactionInfo(req, exchangeId, userId);
-
-        if (infos == null || infos.size() == 0) {
-            throw new NotFoundTransactionException();
-        }
-
-        float buyAmount = 0, seelAmount = 0;
-        float buyUnits = 0, sellUnits = 0;
-
-        for (TransactionInfo info : infos) {
-            if (info.getType().equals(BUY.name())) {
-                buyUnits += info.getUnits();
-
-            } else {
-                sellUnits += info.getUnits();
-            }
-        }
     }
 }
 

@@ -5,6 +5,7 @@ import static com.verifymycoin.TransactionManager.utils.ApiUtils.success;
 import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
 import com.verifymycoin.TransactionManager.model.response.CoinExchangeRes;
 import com.verifymycoin.TransactionManager.model.response.PaymentCurrencyRes;
+import com.verifymycoin.TransactionManager.model.response.TransactionInfoRes;
 import com.verifymycoin.TransactionManager.service.TransactionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class TransactionController {
         @RequestBody final TransactionsReq req, @RequestHeader("userId") final String userId) throws Exception {
         log.debug("user_id ====> {}", userId);
 
-        transactionService.getTransactions(req, exchangeId, userId);
-        return ResponseEntity.ok().body(success("Hello"));
+        TransactionInfoRes res = transactionService.getTransactionInfoSummary(req, exchangeId, userId);
+        return ResponseEntity.ok().body(success(res));
     }
 }

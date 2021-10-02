@@ -18,11 +18,11 @@ public class TransactionsDataDto {
 
     private String orderCurrency;
     private String paymentCurrency;
-    private Float units;
-    private Float price;
-    private Float amount;
-    private Float fee;
-    private Float orderBalance;
+    private Double units;
+    private Double price;
+    private Double amount;
+    private Double fee;
+    private Double orderBalance;
 
     public void setSearch(String search) {
         this.search = SearchGb.find(search);
@@ -34,22 +34,22 @@ public class TransactionsDataDto {
 
     public void setUnits(String units) {
         units = units.replaceAll(" ", "");
-        this.units = Float.parseFloat(units);
+        this.units = Double.parseDouble(units);
     }
 
     public void setPrice(String price) {
-        this.price = Float.parseFloat(price);
+        this.price = Double.parseDouble(price);
     }
 
     public void setAmount(String amount) {
-        this.amount = Float.parseFloat(amount);
+        this.amount = Double.parseDouble(amount);
     }
 
     public void setFee(String fee) {
-        this.fee = Float.parseFloat(fee);
+        this.fee = Double.parseDouble(fee);
     }
 
     public void setOrderBalance(String orderBalance) {
-        this.orderBalance = Float.parseFloat(orderBalance);
+        this.orderBalance = Double.parseDouble(orderBalance);
     }
 }

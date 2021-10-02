@@ -10,7 +10,7 @@ spring:
     database: mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://13.209.99.141:3306/transaction?useSSL=false
+    url: jdbc:mysql://3.35.214.234:3306/transaction?useSSL=false
     username: root
     password: root
 

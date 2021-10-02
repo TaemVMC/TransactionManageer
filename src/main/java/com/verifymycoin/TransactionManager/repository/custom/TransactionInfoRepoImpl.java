@@ -3,7 +3,8 @@ package com.verifymycoin.TransactionManager.repository.custom;
 import static com.verifymycoin.TransactionManager.model.entity.QTransactionInfo.transactionInfo;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.verifymycoin.TransactionManager.model.entity.TransactionInfo;
+import com.verifymycoin.TransactionManager.model.dto.QTransactionSummaryDto;
+import com.verifymycoin.TransactionManager.model.dto.TransactionSummaryDto;
 import com.verifymycoin.TransactionManager.model.request.TransactionsReq;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -41,18 +42,33 @@ public class TransactionInfoRepoImpl implements TransactionInfoRepoCustom {
         return fetchOne != null;
     }
 
+    /**
+     * 사용자 수익률 계산
+     *
+     * @param req
+     * @param exchangeId
+     * @param userId
+     * @return
+     */
     @Override
-    public List<TransactionInfo> findAllTransactionInfo(TransactionsReq req, Integer exchangeId, String userId) {
-        Long startDate = req.getStartDate().getTime();
-        Long endDate = req.getEndDate().getTime();
-
+    public List<TransactionSummaryDto> calcTransactionSummary(TransactionsReq req, Integer exchangeId,
+        String userId) {
         return queryFactory
-            .selectFrom(transactionInfo)
-            .where(transactionInfo.exchangeId.eq(exchangeId)
-                .and(transactionInfo.userId.eq(userId))
+            .from(transactionInfo)
+            .where(transactionInfo.userId.eq(userId)
+                .and(transactionInfo.exchangeId.eq(exchangeId))
                 .and(transactionInfo.orderCoinSymbol.eq(req.getOrderCurrency()))
-                .and(transactionInfo.paymentCurrencySymbol.eq(req.getPaymentCurrency().getCode()))
-                .and(transactionInfo.transferDate.between(startDate, endDate)))
-            .orderBy(transactionInfo.transferDate.asc()).fetch();
+                .and(transactionInfo.paymentCurrencySymbol.eq(req.getPaymentCurrency().getCode())))
+            .groupBy(transactionInfo.type)
+            .select(
+                new QTransactionSummaryDto(
+                    transactionInfo.type,
+                    transactionInfo.units.sum().as("total_units"),
+                    transactionInfo.amount.sum().as("total_amount"),
+                    transactionInfo.price.multiply(transactionInfo.units).sum(),
+                    transactionInfo.amount.sum(),
+                    transactionInfo.transferDate.max(),
+                    transactionInfo.count())
+            ).fetch();
     }
 }

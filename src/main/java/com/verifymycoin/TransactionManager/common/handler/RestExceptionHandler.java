@@ -1,10 +1,12 @@
 package com.verifymycoin.TransactionManager.common.handler;
 
 import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.INTERNAL_SERVER_ERROR;
+import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.NOT_FOUND_EXCHANGE_COIN;
 import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.NOT_FOUND_EXCHANGE_ID;
 import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.NOT_FOUND_TRANSACTION;
 
 import com.verifymycoin.TransactionManager.common.exceptions.CustomRequestException;
+import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeCoinException;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundExchangeIdException;
 import com.verifymycoin.TransactionManager.common.exceptions.NotFoundTransactionException;
 import com.verifymycoin.TransactionManager.common.exceptions.TransactionsApiException;
@@ -27,6 +29,11 @@ public class RestExceptionHandler {
     @ExceptionHandler(value = NotFoundExchangeIdException.class)
     public ResponseEntity<?> handleNotFoundExchangeIdException(final NotFoundExchangeIdException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomRequestException(NOT_FOUND_EXCHANGE_ID));
+    }
+
+    @ExceptionHandler(value = NotFoundExchangeCoinException.class)
+    public ResponseEntity<?> handleNotFoundExchangeCoinException(final NotFoundExchangeCoinException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomRequestException(NOT_FOUND_EXCHANGE_COIN));
     }
 
     @ExceptionHandler(value = NotFoundTransactionException.class)

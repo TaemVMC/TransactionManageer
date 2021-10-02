@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public enum ErrorCode {
 
     NOT_FOUND_EXCHANGE_ID(1411, "존재하지 않는 거래소 ID 입니다."),
+    NOT_FOUND_EXCHANGE_COIN(1412, "해당 거래소에서 지원하지 않는 코인입니다."),
     NOT_FOUND_TRANSACTION(1421, "해당 조건에 해당하는 데이터가 존재하지 않습니다."),
 
     INTERNAL_SERVER_ERROR(1501, "Unexpected server error");
