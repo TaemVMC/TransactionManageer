@@ -1,6 +1,7 @@
 package com.verifymycoin.TransactionManager.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.text.DecimalFormat;
 import java.util.Date;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class KafkaTransactionDto {
     private String paymentCurrency;
 
     private double profit;
-    private double yield;
+    private String yield;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
@@ -31,7 +32,9 @@ public class KafkaTransactionDto {
         this.paymentCurrency = paymentCurrency;
 
         this.profit = sellAmount - buyAmount;
-        this.yield = this.profit / buyAmount;
+
+        DecimalFormat df = new DecimalFormat("0.00");
+        this.yield = df.format(this.profit / buyAmount);
         this.endDate = endDate;
     }
 }

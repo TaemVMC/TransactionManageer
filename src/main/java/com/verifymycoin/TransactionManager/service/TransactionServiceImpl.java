@@ -2,6 +2,7 @@ package com.verifymycoin.TransactionManager.service;
 
 import static com.verifymycoin.TransactionManager.common.enums.ErrorCode.INTERNAL_SERVER_ERROR;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.verifymycoin.TransactionManager.common.enums.SearchGb;
@@ -24,6 +25,7 @@ import com.verifymycoin.TransactionManager.repository.CoinExchangeAssocRepo;
 import com.verifymycoin.TransactionManager.repository.ExchangeRepo;
 import com.verifymycoin.TransactionManager.repository.PaymentCurrencyExchangeAssocRepo;
 import com.verifymycoin.TransactionManager.repository.TransactionInfoRepo;
+import com.verifymycoin.TransactionManager.service.kafka.KafkaProducerService;
 import com.verifymycoin.TransactionManager.utils.BithumbClient;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +44,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionServiceImpl implements TransactionService {
 
     private final BithumbClient bithumbClient;
+
     private final ExchangeRepo exchangeRepository;
     private final PaymentCurrencyExchangeAssocRepo paymentCurrencyExchangeAssocRepo;
     private final CoinExchangeAssocRepo coinExchangeAssocRepository;
     private final TransactionInfoRepo transactionInfoRepository;
+
+    private final KafkaProducerService kafkaProducerService;
 
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
@@ -127,7 +132,8 @@ public class TransactionServiceImpl implements TransactionService {
         return calcTransactionInfoSummary(req, userId, exchange);
     }
 
-    private TransactionInfoRes calcTransactionInfoSummary(final TransactionsReq req, final String userId, final Exchange exchange) {
+    private TransactionInfoRes calcTransactionInfoSummary(final TransactionsReq req, final String userId, final Exchange exchange)
+        throws JsonProcessingException {
         List<TransactionSummaryDto> dto = transactionInfoRepository.calcTransactionSummary(req, exchange.getId(), userId);
 
         TransactionInfoRes res = new TransactionInfoRes();
@@ -159,6 +165,7 @@ public class TransactionServiceImpl implements TransactionService {
             .endDate(req.getEndDate())
             .build();
 
+        kafkaProducerService.send("transactionSummary", kafkaDto);
         return res;
     }
 
