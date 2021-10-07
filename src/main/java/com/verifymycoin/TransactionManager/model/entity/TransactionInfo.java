@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class TransactionInfo {
 
     @Id
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false, length = 64)
     private String id;
 
     @Column(nullable = false)

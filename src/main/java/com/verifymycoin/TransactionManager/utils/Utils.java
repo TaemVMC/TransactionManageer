@@ -20,12 +20,10 @@ public class Utils {
             string.append(entry.getValue());
             string.append("&");
         }
-
         return string.toString();
     }
 
     public static String generateTransactionId(String source) {
-        return Hashing.goodFastHash(128).hashString(source, StandardCharsets.UTF_8).toString();
+        return Hashing.sha256().hashString(source, StandardCharsets.UTF_8).toString();
     }
-
 }
