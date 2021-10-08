@@ -39,7 +39,7 @@ jobs:
         username: ubuntu
         key_path: ".vmc.pem"
         source: "docker-compose.dev.yml"
-        target: "./"
+        target: "/home/ubuntu/"
 #     - name: scp
 #       run: scp -i "./.vmc.pem" docker-compose.dev.yml ubuntu@${{ env.DESTINATION_SERVER }}:~/
 #     - name: remove the specified number of leading path elements
