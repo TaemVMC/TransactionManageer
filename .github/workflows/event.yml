@@ -1,4 +1,4 @@
-name: CI/CD on development branch
+name: TEST
 
 on:
   workflow_dispatch:
@@ -32,14 +32,15 @@ jobs:
       shell: bash
       env:
         EC2_PEM: ${{secrets.EC2_PEM}}
-
-    - name: remove the specified number of leading path elements
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ env.DESTINATION_SERVER }}
-        username: ubuntu
-        key_path: ".vmc.pem"
-        source: "docker-compose.dev.yml"
-        target: "./"
+    - name: scp
+      run: scp -i "./.vmc.pem" docker-compose.dev.yml ubuntu@${{ env.DESTINATION_SERVER }}:~/
+#     - name: remove the specified number of leading path elements
+#       uses: appleboy/scp-action@master
+#       with:
+#         host: ${{ env.DESTINATION_SERVER }}
+#         username: ubuntu
+#         key_path: ".vmc.pem"
+#         source: "docker-compose.dev.yml"
+#         target: "./"
 
     
