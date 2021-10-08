@@ -1,0 +1,45 @@
+name: CI/CD on development branch
+
+on:
+  workflow_dispatch:
+  inputs:
+    logLevel:
+      description: 'Log level'     
+      required: true
+      default: 'warning'
+    tags:
+      description: 'Test scenario tags'
+      required: false
+
+env:
+  DOCKER_COMPOSE_SERVICE: transaction-manager
+  DOCKER_HUB_REPO: on91716/dev.transaction-manager  # on91716/dev.${{ github.event.repository.name }}
+  PROFILES: dev
+  DESTINATION_SERVER: 3.37.123.157
+
+jobs:
+  cd_job:
+    runs-on: ubuntu-latest
+    steps:
+    ########################## 2. For SSH command ##########################
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        repository: TaemVMC/Builder
+
+    - name: Set AWS Key
+      run: 'echo "$EC2_PEM" > .vmc.pem && chmod 400 .vmc.pem'
+      shell: bash
+      env:
+        EC2_PEM: ${{secrets.EC2_PEM}}
+
+    - name: remove the specified number of leading path elements
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ env.DESTINATION_SERVER }}
+        username: ubuntu
+        key_path: ".vmc.pem"
+        source: "docker-compose.dev.yml"
+        target: "./"
+
+    
