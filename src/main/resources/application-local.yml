@@ -18,6 +18,12 @@ spring:
       path: /h2-console
 
 logging:
+  file:
+    name: "/log/transaction-manager.log"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 100MB
   level:
     com.verifymycoin.TransactionManager: DEBUG
     org.hibernate: info

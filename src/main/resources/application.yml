@@ -20,6 +20,15 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+
+logging:
+  file:
+    name: "/log/transaction-manager.log"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 100MB
+
 api:
   default: https://api.bithumb.com
 
