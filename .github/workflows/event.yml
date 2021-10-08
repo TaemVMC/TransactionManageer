@@ -2,14 +2,14 @@ name: CI/CD on development branch
 
 on:
   workflow_dispatch:
-  inputs:
-    logLevel:
-      description: 'Log level'     
-      required: true
-      default: 'warning'
-    tags:
-      description: 'Test scenario tags'
-      required: false
+    inputs:
+      logLevel:
+        description: 'Log level'     
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Test scenario tags'
+        required: false
 
 env:
   DOCKER_COMPOSE_SERVICE: transaction-manager
