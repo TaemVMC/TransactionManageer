@@ -15,6 +15,9 @@ logging:
     rollingpolicy:
       max-file-size: 10MB
       total-size-cap: 100MB
+  pattern:
+    console:
+
 management:
   endpoints:
     web:
