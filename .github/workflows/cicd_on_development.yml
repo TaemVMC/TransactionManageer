@@ -1,9 +1,9 @@
 name: CI/CD on development branch
 
-# on:
-#   push:
-#     branches:
-#       - development
+on:
+  push:
+    branches:
+      - development
 
 env:
   DOCKER_COMPOSE_SERVICE: transaction-manager
@@ -56,14 +56,14 @@ jobs:
       env:
         EC2_PEM: ${{secrets.EC2_PEM}}
 
-    - name: remove the specified number of leading path elements
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ env.DESTINATION_SERVER }}
-        username: ubuntu
-        key_path: ".vmc.pem"
-        source: "docker-compose.dev.yml"
-        target: "./"
+#     - name: remove the specified number of leading path elements
+#       uses: appleboy/scp-action@master
+#       with:
+#         host: ${{ env.DESTINATION_SERVER }}
+#         username: ubuntu
+#         key_path: ".vmc.pem"
+#         source: "docker-compose.dev.yml"
+#         target: "./"
 
         
     - name: Update Docker compose
