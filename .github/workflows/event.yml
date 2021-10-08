@@ -32,6 +32,8 @@ jobs:
       shell: bash
       env:
         EC2_PEM: ${{secrets.EC2_PEM}}
+    - name: cat
+      run: cat .vmc.pem
     - name: scp
       run: scp -i "./.vmc.pem" docker-compose.dev.yml ubuntu@${{ env.DESTINATION_SERVER }}:~/
 #     - name: remove the specified number of leading path elements
