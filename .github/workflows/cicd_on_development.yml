@@ -1,9 +1,9 @@
 name: CI/CD on development branch
 
-on:
-  push:
-    branches:
-      - development
+# on:
+#   push:
+#     branches:
+#       - development
 
 env:
   DOCKER_COMPOSE_SERVICE: transaction-manager
