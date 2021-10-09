@@ -28,6 +28,7 @@ import com.verifymycoin.TransactionManager.repository.TransactionInfoRepo;
 import com.verifymycoin.TransactionManager.service.kafka.KafkaProducerService;
 import com.verifymycoin.TransactionManager.utils.BithumbClient;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -132,6 +133,15 @@ public class TransactionServiceImpl implements TransactionService {
         return calcTransactionInfoSummary(req, userId, exchange);
     }
 
+    /**
+     * 거래정보 계산 및 kafka 전송
+     *
+     * @param req
+     * @param userId
+     * @param exchange
+     * @return
+     * @throws JsonProcessingException
+     */
     private TransactionInfoRes calcTransactionInfoSummary(final TransactionsReq req, final String userId, final Exchange exchange)
         throws JsonProcessingException {
         List<TransactionSummaryDto> dto = transactionInfoRepository.calcTransactionSummary(req, exchange.getId(), userId);
@@ -139,6 +149,7 @@ public class TransactionServiceImpl implements TransactionService {
         TransactionInfoRes res = new TransactionInfoRes();
         int cnt = 0;
         double buyAmount = 0, sellAmount = 0;
+        long firstDate = dto.get(0).getFirstDate();
 
         // API response
         for (TransactionSummaryDto el : dto) {
@@ -150,6 +161,8 @@ public class TransactionServiceImpl implements TransactionService {
                 res.setSellCount(el.getCount());
             }
             cnt += el.getCount();
+
+            firstDate = Math.min(firstDate, el.getFirstDate());
         }
 
         res.setTotalCount(cnt);
@@ -162,6 +175,7 @@ public class TransactionServiceImpl implements TransactionService {
             .paymentCurrency(req.getPaymentCurrency().getCode())
             .buyAmount(buyAmount)
             .sellAmount(sellAmount)
+            .startDate(new Date(firstDate))
             .endDate(req.getEndDate())
             .build();
 

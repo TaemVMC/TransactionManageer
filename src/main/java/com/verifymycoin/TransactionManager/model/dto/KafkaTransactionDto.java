@@ -21,11 +21,14 @@ public class KafkaTransactionDto {
     private String yield;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date startDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
 
     @Builder
     public KafkaTransactionDto(String exchangeName, String userId, String orderCurrency, String paymentCurrency,
-        double buyAmount, double sellAmount, Date endDate) {
+        double buyAmount, double sellAmount, Date startDate, Date endDate) {
         this.exchangeName = exchangeName;
         this.userId = userId;
         this.orderCurrency = orderCurrency;
@@ -35,6 +38,7 @@ public class KafkaTransactionDto {
 
         DecimalFormat df = new DecimalFormat("0.00");
         this.yield = df.format(this.profit / buyAmount);
+        this.startDate = startDate;
         this.endDate = endDate;
     }
 }

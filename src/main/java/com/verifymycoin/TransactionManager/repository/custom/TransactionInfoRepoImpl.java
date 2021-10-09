@@ -67,6 +67,7 @@ public class TransactionInfoRepoImpl implements TransactionInfoRepoCustom {
                     transactionInfo.amount.sum().as("total_amount"),
                     transactionInfo.price.multiply(transactionInfo.units).sum(),
                     transactionInfo.amount.sum(),
+                    transactionInfo.transferDate.min(),
                     transactionInfo.transferDate.max(),
                     transactionInfo.count())
             ).fetch();
